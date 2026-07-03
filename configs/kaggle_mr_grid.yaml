@@ -2,7 +2,7 @@ data_dir: /kaggle/input/datasets/dmitriy000/crypto-test
 out_dir: /kaggle/working/research_logs
 
 project: crypto_micro_alpha
-use_wandb: false
+use_wandb: true
 
 symbols:
   - act
@@ -15,9 +15,9 @@ fee_bps: 15.3
 strategy: mean_reversion_bid_ask
 
 grid:
-  lookbacks: [300, 600, 1800, 2400, 3600, 7200]
+  lookbacks: [150, 300, 600, 1800, 2400, 3600, 7200]
   entries: [1.5, 2.0, 2.5, 3.0, 3.25, 3.5]
-  exits: [-0.3, -0.1, 0.0, 0.1, 0.3, 0.5, 1.0]
+  exits: [-0.5, -0.3, -0.1, 0.0, 0.1, 0.3, 0.5, 1.0]
   spread_filters: ["none", "low", "high"]
-  spread_quantiles: [0.3, 0.5, 0.7]
+  spread_quantiles: [0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9]
   mean_window_types: ["sma", "triang", "hann", "hamming", "gaussian", "exponential"]

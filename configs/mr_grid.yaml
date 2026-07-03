@@ -1,0 +1,23 @@
+data_dir: ./data
+out_dir: ./research_logs
+
+project: crypto_micro_alpha
+use_wandb: false
+
+symbols:
+  - act
+  - bsb
+  - siren
+  - tac
+
+fee_bps: 15.3
+
+strategy: mean_reversion_bid_ask
+
+grid:
+  lookbacks: [2400]
+  entries: [3.0]
+  exits: [0.1]
+  spread_filters: ["none"]
+  spread_quantiles: [0.5]
+  

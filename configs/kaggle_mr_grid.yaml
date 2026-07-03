@@ -1,0 +1,22 @@
+data_dir: /kaggle/input/<dataset-name>
+out_dir: /kaggle/working/research_logs
+
+project: crypto_micro_alpha
+use_wandb: true
+
+symbols:
+  - act
+  - bsb
+  - siren
+  - tac
+
+fee_bps: 10.0
+
+strategy: mean_reversion_bid_ask
+
+grid:
+  lookbacks: [300, 600, 1800, 2400, 3600, 7200]
+  entries: [1.5, 2.0, 2.5, 3.0, 3.25, 3.5]
+  exits: [-0.3, -0.1, 0.0, 0.1, 0.3, 0.5, 1.0]
+  spread_filters: ["none", "low", "high"]
+  spread_quantiles: [0.3, 0.5, 0.7]

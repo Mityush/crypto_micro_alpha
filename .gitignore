@@ -6,6 +6,7 @@ __pycache__/
 data/
 research_logs/
 wandb/
+trash/
 *.parquet
 *.zip
 .DS_Store

@@ -11,7 +11,7 @@ except ImportError:
 
 
 class ResearchLogger:
-    def __init__(self, out_dir, project="crypto_micro_alpha", use_wandb=False):
+    def __init__(self, out_dir, project="crypto_micro_alpha", use_wandb=True):
         self.out_dir = Path(out_dir)
         self.project = project
         self.use_wandb = use_wandb and WANDB_AVAILABLE

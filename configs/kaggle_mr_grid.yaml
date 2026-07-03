@@ -1,4 +1,4 @@
-data_dir: /kaggle/input/<dataset-name>
+data_dir: /kaggle/input/crypto_test
 out_dir: /kaggle/working/research_logs
 
 project: crypto_micro_alpha
@@ -10,7 +10,7 @@ symbols:
   - siren
   - tac
 
-fee_bps: 10.0
+fee_bps: 15.3
 
 strategy: mean_reversion_bid_ask
 

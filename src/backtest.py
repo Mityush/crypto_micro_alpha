@@ -13,6 +13,7 @@ def run_mr_backtest(
     spread_window: int = 6000,
     spread_quantile: float = 0.5,
 ) -> pd.DataFrame:
+    df = df.copy().sort_values("datetime").reset_index(drop=True)
     df = mean_reversion_zscore(
         df,
         lookback=lookback,

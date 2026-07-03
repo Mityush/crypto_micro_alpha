@@ -29,7 +29,7 @@ def mean_reversion_zscore(
 
     df["z_score"] = (
         (df["lookback_ret"] - df["past_ret_mean"])
-        / df["past_ret_std"]
+        / df["past_ret_std"].replace(0, np.nan)
     )
 
     return df

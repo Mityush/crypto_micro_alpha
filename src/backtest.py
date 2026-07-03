@@ -8,16 +8,18 @@ def run_mr_backtest(
     z_window: int,
     entry_score: float,
     exit_score: float,
-    fee_bps: float = 0.0,
+    fee_bps: float = 15.3,
     spread_filter: str = "none",  # none, low, high
     spread_window: int = 6000,
     spread_quantile: float = 0.5,
+    mean_window_type: str = 'sma',
 ) -> pd.DataFrame:
     df = df.copy().sort_values("datetime").reset_index(drop=True)
     df = mean_reversion_zscore(
         df,
         lookback=lookback,
         z_window=z_window,
+        mean_window_type=mean_window_type,
     )
 
     df = build_threshold_position(

@@ -51,8 +51,9 @@ def main():
     lookbacks = grid_cfg["lookbacks"]
     entries = grid_cfg["entries"]
     exits = grid_cfg["exits"]
-    spread_filters = grid_cfg.get("spread_filters", ["none"])
-    spread_quantiles = grid_cfg.get("spread_quantiles", [0.5])
+    spread_filters = grid_cfg.get("spread_filters")
+    spread_quantiles = grid_cfg.get("spread_quantiles")
+    mean_window_types = grid_cfg.get("mean_window_types")
 
     all_runs = []
 
@@ -63,9 +64,10 @@ def main():
     exits,
     spread_filters,
     spread_quantiles,
+    mean_window_types
     ))
 
-    for symbol, lookback, entry_score, exit_score, spread_filter, spread_quantile in tqdm(grid):
+    for symbol, lookback, entry_score, exit_score, spread_filter, spread_quantile, mean_window_type in tqdm(grid):
         if exit_score >= entry_score:
             continue
 
@@ -83,6 +85,7 @@ def main():
             "spread_filter": spread_filter,
             "spread_window": spread_window,
             "spread_quantile": spread_quantile,
+            "mean_window_type": mean_window_type,
         }
 
         bt = run_mr_backtest(
@@ -95,6 +98,7 @@ def main():
             spread_filter=spread_filter,
             spread_window=spread_window,
             spread_quantile=spread_quantile,
+            mean_window_type=mean_window_type,
         )
 
         metrics = make_metrics(bt)
@@ -152,6 +156,7 @@ def main():
         "z_window",
         "entry_score",
         "exit_score",
+        "mean_window_type",
         "fee_bps",
         "spread_filter",
         "spread_window",

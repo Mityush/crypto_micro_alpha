@@ -1,6 +1,36 @@
 import numpy as np
 import pandas as pd
-from scipy.signal import windows
+from scipy.signal import windows, fftconvolve
+
+def make_signal_input(
+    df: pd.DataFrame,
+    signal_input: str = "log_return",
+    vol_window: int = 1800,
+) -> pd.DataFrame:
+    df = df.copy()
+
+    if signal_input == "log_return":
+        df["signal_ret"] = df["log_return_1s"]
+
+    elif signal_input == "vol_scaled_return":
+        df["realized_vol"] = (
+            df["log_return_1s"]
+            .rolling(vol_window, min_periods=vol_window)
+            .std()
+            .shift(1)
+        )
+
+        df["signal_ret"] = (
+            df["log_return_1s"]
+            / df["realized_vol"].replace(0, np.nan)
+        )
+
+    else:
+        raise ValueError(
+            "signal_input must be one of: log_return, vol_scaled_return"
+        )
+
+    return df
 
 
 def get_causal_weights(window_type: str, window: int) -> np.ndarray:
@@ -17,7 +47,7 @@ def get_causal_weights(window_type: str, window: int) -> np.ndarray:
     elif window_type == "blackman":
         w = windows.blackman(window)
 
-    elif window_type == "gaussian":
+    elif window_type == "gaussian": 
         w = windows.gaussian(window, std=window / 6)
 
     else:
@@ -52,16 +82,47 @@ def rolling_weighted_mean_std(
 
     weights = get_causal_weights(window_type, window)
 
-    def wmean(x):
-        return np.sum(weights * x)
+    x = s.to_numpy(dtype=float)
+    valid = np.isfinite(x)
 
-    def wstd(x):
-        mu = np.sum(weights * x)
-        var = np.sum(weights * (x - mu) ** 2)
-        return np.sqrt(var)
+    x0 = np.where(valid, x, 0.0)
+    x2 = x0 ** 2
 
-    mean = s.rolling(window, min_periods=window).apply(wmean, raw=True)
-    std = s.rolling(window, min_periods=window).apply(wstd, raw=True)
+    # проверяем, что в rolling-окне нет NaN
+    valid_count = np.convolve(
+        valid.astype(float),
+        np.ones(window),
+        mode="valid",
+    )
+
+    # weighted mean = sum(w_i * x_i)
+    # fftconvolve быстрее rolling.apply для больших окон
+    mean_valid = fftconvolve(
+        x0,
+        weights[::-1],
+        mode="valid",
+    )
+
+    second_valid = fftconvolve(
+        x2,
+        weights[::-1],
+        mode="valid",
+    )
+
+    var_valid = second_valid - mean_valid ** 2
+    var_valid = np.maximum(var_valid, 0.0)
+    std_valid = np.sqrt(var_valid)
+
+    mean_arr = np.full(len(s), np.nan)
+    std_arr = np.full(len(s), np.nan)
+
+    ok = valid_count == window
+
+    mean_arr[window - 1:] = np.where(ok, mean_valid, np.nan)
+    std_arr[window - 1:] = np.where(ok, std_valid, np.nan)
+
+    mean = pd.Series(mean_arr, index=s.index)
+    std = pd.Series(std_arr, index=s.index)
 
     return mean, std
 
@@ -71,11 +132,19 @@ def mean_reversion_zscore(
     lookback: int,
     z_window: int,
     mean_window_type: str = "sma",
+    signal_input: str = "log_return",
+    vol_window: int = 1800,
 ) -> pd.DataFrame:
     df = df.copy()
 
+    df = make_signal_input(
+        df,
+        signal_input=signal_input,
+        vol_window=vol_window,
+    )
+
     df["lookback_ret"] = (
-        df["log_return_1s"]
+        df["signal_ret"]
         .rolling(lookback, min_periods=lookback)
         .sum()
     )

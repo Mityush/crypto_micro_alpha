@@ -54,6 +54,15 @@ def main():
     spread_filters = grid_cfg.get("spread_filters")
     spread_quantiles = grid_cfg.get("spread_quantiles")
     mean_window_types = grid_cfg.get("mean_window_types")
+    signal_inputs = grid_cfg.get(
+        "signal_inputs",
+        ["log_return"]
+    )
+
+    vol_windows = grid_cfg.get(
+        "vol_windows",
+        [1800]
+    )
 
     all_runs = []
 
@@ -64,10 +73,12 @@ def main():
     exits,
     spread_filters,
     spread_quantiles,
-    mean_window_types
+    mean_window_types,
+    signal_inputs,
+    vol_windows,
     ))
 
-    for symbol, lookback, entry_score, exit_score, spread_filter, spread_quantile, mean_window_type in tqdm(grid):
+    for symbol, lookback, entry_score, exit_score, spread_filter, spread_quantile, mean_window_type, signal_input, vol_window in tqdm(grid):
         if exit_score >= entry_score:
             continue
 
@@ -86,6 +97,8 @@ def main():
             "spread_window": spread_window,
             "spread_quantile": spread_quantile,
             "mean_window_type": mean_window_type,
+            "signal_input": signal_input,
+            "vol_window": vol_window,
         }
 
         bt = run_mr_backtest(
@@ -99,6 +112,8 @@ def main():
             spread_window=spread_window,
             spread_quantile=spread_quantile,
             mean_window_type=mean_window_type,
+            signal_input=signal_input,
+            vol_window=vol_window,
         )
 
         metrics = make_metrics(bt)
@@ -157,6 +172,8 @@ def main():
         "entry_score",
         "exit_score",
         "mean_window_type",
+        "signal_input",
+        "vol_window",
         "fee_bps",
         "spread_filter",
         "spread_window",
@@ -177,6 +194,54 @@ def main():
 
     print(summary.head(30))
     print(f"Saved summary to {out_path}")
+
+
+    import matplotlib.pyplot as plt
+    def log_heatmap(summary, symbol, metric="total_return_net"):
+        df = summary[summary["symbol"] == symbol].copy()
+
+        pivot = df.pivot_table(
+            index="lookback",
+            columns="entry_score",
+            values=metric,
+            aggfunc="mean"
+        )
+
+        plt.figure(figsize=(10, 6))
+        plt.imshow(pivot, aspect="auto")
+        plt.xticks(range(len(pivot.columns)), pivot.columns)
+        plt.yticks(range(len(pivot.index)), pivot.index)
+        plt.xlabel("entry_score")
+        plt.ylabel("lookback")
+        plt.title(f"{symbol}: {metric} heatmap")
+        plt.colorbar(label=metric)
+
+        wandb.log({
+            f"heatmap/{symbol}_{metric}_lookback_entry": wandb.Image(plt)
+        })
+
+        plt.close()
+
+    if cfg.get("use_wandb", False):
+        import wandb
+
+        top200 = summary.sort_values(
+            "total_return_net",
+            ascending=False
+        ).head(200)
+
+        wandb.init(
+            project=cfg.get("project", "crypto_micro_alpha"),
+            name="grid_summary_top200",
+            reinit=True,
+        )
+
+        wandb.log({
+            "top200_table": wandb.Table(dataframe=top200)
+        })
+
+        wandb.finish()
+    
 
 
 if __name__ == "__main__":

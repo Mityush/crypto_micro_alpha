@@ -74,7 +74,7 @@ class ResearchLogger:
 
             if equity_df is not None and len(equity_df) > 0:
                 wandb.log({
-                    "equity_net_final": metrics.get("net_pnl", np.nan),
+                    "equity_net_final": metrics.get("total_return_net", np.nan),
                 })
 
             wandb.finish()

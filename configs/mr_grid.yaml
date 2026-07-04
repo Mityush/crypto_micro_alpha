@@ -5,16 +5,21 @@ project: crypto_micro_alpha
 use_wandb: false
 
 symbols:
+  - act
+  - bsb
   - siren
+  - tac
 
 fee_bps: 15.3
 
 strategy: mean_reversion_bid_ask
 
 grid:
-  lookbacks: [2400]
-  entries: [3.0]
-  exits: [0.1]
-  spread_filters: ["none"]
-  spread_quantiles: [0.5]
+  lookbacks: [300, 600, 1800, 3600, 7200]
+  entries: [2, 2.5, 3.0, 3.5]
+  exits: [-0.2, 0, 0.1, 0.3, 0.5]
+  spread_filters: ["none", "high", "low"]
+  spread_quantiles: [0.1, 0.3, 0.5, 0.7, 0.9]
   mean_window_types: ["sma", "triang", "hann", "hamming", "gaussian", "exponential"]
+  signal_inputs: ["vol_scaled_return"]
+  vol_windows: [600, 1800, 3600]

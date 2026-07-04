@@ -1,0 +1,22 @@
+data_dir: ./data
+out_dir: ./research_logs
+
+project: crypto_micro_alpha
+use_wandb: false
+
+symbols:
+  - tac
+
+fee_bps: 15.3
+
+strategy: mean_reversion_bid_ask
+
+grid:
+  lookbacks: [300]
+  entries: [2]
+  exits: [0.3]
+  spread_filters: ["none"]
+  spread_quantiles: [0.1]
+  mean_window_types: ["sma", "exponential"]
+  signal_inputs: ["vol_scaled_return"]
+  vol_windows: [600]

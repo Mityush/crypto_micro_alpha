@@ -13,6 +13,8 @@ def run_mr_backtest(
     spread_window: int = 6000,
     spread_quantile: float = 0.5,
     mean_window_type: str = 'sma',
+    signal_input: str = "log_return",
+    vol_window: int = 1800,
 ) -> pd.DataFrame:
     df = df.copy().sort_values("datetime").reset_index(drop=True)
     df = mean_reversion_zscore(
@@ -20,6 +22,8 @@ def run_mr_backtest(
         lookback=lookback,
         z_window=z_window,
         mean_window_type=mean_window_type,
+        signal_input=signal_input,
+        vol_window=vol_window,
     )
 
     df = build_threshold_position(

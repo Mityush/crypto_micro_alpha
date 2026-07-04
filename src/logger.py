@@ -57,6 +57,11 @@ class ResearchLogger:
                 project=self.project,
                 config=config,
                 name=run_id,
+                tags = [
+                    config.get('symbol', 'unknown'),
+                    config.get('strategy', 'unknown'),
+                    config.get('spread_filter', 'unknown'),
+                ],
                 reinit=True,
             )
             wandb.log(metrics)

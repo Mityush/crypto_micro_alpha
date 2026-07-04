@@ -64,7 +64,13 @@ class ResearchLogger:
                 ],
                 reinit=True,
             )
-            wandb.log(metrics)
+            wandb.log({
+                **metrics,
+                "symbol_label": config.get("symbol", "unknown"),
+                "strategy_label": config.get("strategy", "unknown"),
+                "spread_filter_label": config.get("spread_filter", "unknown"),
+                "mean_window_type_label": config.get("mean_window_type", "unknown"),
+            })
 
             if equity_df is not None and len(equity_df) > 0:
                 wandb.log({
